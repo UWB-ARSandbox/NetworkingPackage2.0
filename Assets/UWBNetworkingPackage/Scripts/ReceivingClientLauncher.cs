@@ -22,8 +22,8 @@ namespace UWBNetworkingPackage
 
         #endregion
 
-        //// Ensure not HoloLens
-        //#if UNITY_EDITOR && !UNITY_WSA_10_0
+//// Ensure not HoloLens
+#if !UNITY_WSA_10_0
 
         public void Update()
         {
@@ -138,7 +138,7 @@ namespace UWBNetworkingPackage
         }
 
 
-        #region RPC Method
+#region RPC Method
 
         /// <summary>
         /// This will send a mesh to the master client which will updates
@@ -332,6 +332,7 @@ namespace UWBNetworkingPackage
             //END OF CREATING AND DRAWING THE MEESHES------------------------------------------
         }
 
-        #endregion
+#endregion
+#endif
     }
 }

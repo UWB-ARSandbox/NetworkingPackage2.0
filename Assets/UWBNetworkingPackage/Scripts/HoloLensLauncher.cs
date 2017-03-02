@@ -21,6 +21,7 @@ namespace UWBNetworkingPackage
 
         // Only included if HoloLens
 #if !UNITY_EDITOR && UNITY_WSA_10_0
+        
         public static SpatialMappingManager SpatialMappingManager;  // Needed for Room Scanning / Room Mesh
         private StreamSocket holoClient;    // Async network client (asynchronous I/O needed for HoloLens)
         private IAsyncAction connection;    // Used for creating an asynchronous connection to the Master Client
@@ -34,6 +35,7 @@ namespace UWBNetworkingPackage
         public override void Awake()
         {
             base.Awake();
+            
             SpatialMappingManager = gameObject.AddComponent<SpatialMappingManager>();
         }
 
@@ -76,7 +78,7 @@ namespace UWBNetworkingPackage
         /// Loads the mesh currently saved on the HoloLens, adds the mesh to the Database, and attempts to send the mesh to the 
         /// Master Client by establishing a new network connection (set up via RPC)
         /// </summary>
-        //public void SendMesh()
+        public void SendMesh()
         {
             Database.UpdateMesh(gameObject.AddComponent<MeshDisplay>().LoadMesh());
             photonView.RPC("ReceiveMesh", PhotonTargets.MasterClient, PhotonNetwork.player.ID);

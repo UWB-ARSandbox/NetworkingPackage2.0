@@ -123,6 +123,23 @@ namespace UWBNetworkingPackage
             }).Start();
         }
 
+        /// <summary>
+        /// This returns local IP address
+        /// </summary>
+        /// <returns>Local IP address of the machine running as the Master Client</returns>
+        public IPAddress GetLocalIpAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily.ToString() == "InterNetwork")
+                {
+                    return ip;
+                }
+            }
+            return null;
+        }
+
         #region RPC Method
 
         /// <summary>

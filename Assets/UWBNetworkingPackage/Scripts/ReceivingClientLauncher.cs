@@ -13,7 +13,7 @@ namespace UWBNetworkingPackage
     /// ReceivingClientLauncher is an abstract class (extended by all "Client" devices - Vive, Oculus, Kinect) that connects 
     /// to Photon and sets up a TCP connection with the Master Client to recieve Room Meshes when they are sent
     /// </summary>
-    public abstract class ReceivingClientLauncher : Launcher
+    public class ReceivingClientLauncher : Launcher
     {
 
         #region Private Properties
@@ -96,6 +96,7 @@ namespace UWBNetworkingPackage
         {
             Debug.Log("Client joined room.");
             photonView.RPC("SendMesh", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
+            photonView.RPC("SendBundle", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
         }
 
         /// <summary>
@@ -163,6 +164,43 @@ namespace UWBNetworkingPackage
                 client.Close();
             }).Start();
             
+        }
+
+        [PunRPC]
+        public void ReceiveBundle(string networkConfig)
+        {
+            var networkConfigArray = networkConfig.Split(':');
+
+            TcpClient client = new TcpClient();
+            client.Connect(IPAddress.Parse(networkConfigArray[0]), Int32.Parse(networkConfigArray[1]));
+
+            using (var stream = client.GetStream())
+            {
+                byte[] data = new byte[1024];
+
+                Debug.Log("Start receiving bundle.");
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    int numBytesRead;
+                    while ((numBytesRead = stream.Read(data, 0, data.Length)) > 0)
+                    {
+                        ms.Write(data, 0, numBytesRead);
+                    }
+                    Debug.Log("Finish receiving bundle: size = " + ms.Length);
+                    client.Close();
+
+                    //DONE RECIEVING MESH FROM THE MASTER SERVER, NOW UPDATE IT
+
+                    AssetBundle newBundle = AssetBundle.LoadFromMemory(ms.ToArray());
+                    newBundle.LoadAllAssets();
+                    Debug.Log("You loaded the bundle successfully.");
+
+                }
+            }
+
+            client.Close();
+            
+
         }
 
         /// <summary>

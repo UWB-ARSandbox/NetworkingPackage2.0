@@ -17,7 +17,7 @@ namespace UWBNetworkingPackage
     {
 #region Public Properties
 
-        public bool MasterClient = false;
+        private bool MasterClient = true;
         
         //public bool HoloLens = false;
         //public bool Kinect = false;
@@ -39,7 +39,6 @@ namespace UWBNetworkingPackage
         /// </summary>
         void Awake()
         {
-            Debug.Log(MasterClient);
             //Preprocessor directives to choose which component is added.  Note, master client still has to be hard coded
             //Haven't yet found a better solution for this
 

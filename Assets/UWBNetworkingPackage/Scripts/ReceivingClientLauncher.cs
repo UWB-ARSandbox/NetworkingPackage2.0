@@ -64,7 +64,7 @@ namespace UWBNetworkingPackage
                 Database.UpdateMesh(memoryStream.ToArray());
             }
 
-            //Testcall for the added functionality
+            //Testcalls for the added functionality
             if (Input.GetKeyDown("s"))
             {
                 this.SendMesh();
@@ -91,12 +91,19 @@ namespace UWBNetworkingPackage
 
         /// <summary>
         /// After join the room, ask master client to sent the mesh to this client
+        /// Will also request to send all asset bundles: note, if a new platform needs
+        /// To be added the code below will have to be changed to accomidate new sets
+        /// of AssetBundles
         /// </summary>
         public override void OnJoinedRoom()
         {
             Debug.Log("Client joined room.");
             photonView.RPC("SendMesh", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
-            photonView.RPC("SendBundle", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
+#if UNITY_ANDROID
+            photonView.RPC("SendAndroidBundles", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
+#else
+            photonView.RPC("SendPCBundles", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
+#endif
         }
 
         /// <summary>
@@ -109,7 +116,9 @@ namespace UWBNetworkingPackage
             Debug.Log("A room created by the Master Client could not be found. Disconnecting from PUN");
             PhotonNetwork.Disconnect();
         }
-
+        /// <summary>
+        /// Sends currently held mesh to the master client
+        /// </summary>
         public override void SendMesh()
         {
             if (Database.GetMeshAsBytes() != null)
@@ -118,6 +127,10 @@ namespace UWBNetworkingPackage
             }
         }
 
+        /// <summary>
+        /// Send mesh to add to the mesh held in the database and will then be forwarded to all
+        /// clients
+        /// </summary>
         public override void SendAddMesh()
         {
             if (Database.GetMeshAsBytes() != null)
@@ -139,7 +152,7 @@ namespace UWBNetworkingPackage
         }
 
 
-#region RPC Method
+            #region RPC Method
 
         /// <summary>
         /// This will send a mesh to the master client which will updates
@@ -166,12 +179,17 @@ namespace UWBNetworkingPackage
             
         }
 
+        /// <summary>
+        /// Receive Bundles from the Master client.  Loads all assets from these bundles.
+        /// </summary>
+        /// <param name="networkConfig"></param>
         [PunRPC]
-        public void ReceiveBundle(string networkConfig)
+        public void ReceiveBundles(string networkConfig)
         {
             var networkConfigArray = networkConfig.Split(':');
 
             TcpClient client = new TcpClient();
+            Debug.Log(Int32.Parse(networkConfigArray[1]));
             client.Connect(IPAddress.Parse(networkConfigArray[0]), Int32.Parse(networkConfigArray[1]));
 
             using (var stream = client.GetStream())
@@ -188,8 +206,6 @@ namespace UWBNetworkingPackage
                     }
                     Debug.Log("Finish receiving bundle: size = " + ms.Length);
                     client.Close();
-
-                    //DONE RECIEVING MESH FROM THE MASTER SERVER, NOW UPDATE IT
 
                     AssetBundle newBundle = AssetBundle.LoadFromMemory(ms.ToArray());
                     newBundle.LoadAllAssets();
@@ -370,7 +386,7 @@ namespace UWBNetworkingPackage
             //END OF CREATING AND DRAWING THE MEESHES------------------------------------------
         }
 
-#endregion
+            #endregion
 #endif
-    }
+        }
 }

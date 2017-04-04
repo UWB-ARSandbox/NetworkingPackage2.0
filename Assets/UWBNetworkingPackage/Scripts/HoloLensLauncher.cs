@@ -95,6 +95,14 @@ namespace UWBNetworkingPackage
             photonView.RPC("ReceiveAddMesh", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
         }
 
+        /// <summary>
+        /// Makes a call to delete mesh across network
+        /// </summary>
+        public void DeleteMesh()
+        {
+            photonView.RPC("DeleteMesh", PhotonTargets.MasterClient, PhotonNetwork.player.ID);
+        }
+
                 /// <summary>
         ///// Receive Bundles from the Master client.  Loads all assets from these bundles.
         ///// </summary>
@@ -140,6 +148,7 @@ namespace UWBNetworkingPackage
         // Only included if HoloLens
 
 
+
         /// <summary>
         /// Asynchronously sends the Room Mesh to the specified network configuration
         /// </summary>
@@ -155,6 +164,23 @@ namespace UWBNetworkingPackage
             var aach = new AsyncActionCompletedHandler(NetworkConnectedHandler);
             connection.Completed = aach;
         }  
+
+        /// <summary>
+        /// Asynchronously sends the Room Mesh to the specified network configuration
+        /// </summary>
+        /// <param name="networkConfig">The network information used for sending the mesh (IP address and port)</param>
+        [PunRPC]
+        public override void ReceiveBundles(string networkConfig)
+        {
+            Debug.Log("Master client has created a listener and would like us to receive bundle");
+
+            holoClient = new StreamSocket();
+            string[] networkConfigArray = networkConfig.Split(':');
+            connection = holoClient.ConnectAsync(new HostName(networkConfigArray[0]), networkConfigArray[1]);
+            var aach = new AsyncActionCompletedHandler(NetworkConnectedHandlerBundles);
+            connection.Completed = aach;
+        }  
+
         #endregion
 #endif
 
@@ -190,6 +216,32 @@ namespace UWBNetworkingPackage
                     // Again, this is an async operation, so we'll set a callback.
                     DataWriterStoreOperation dswo = networkDataWriter.StoreAsync();
                     dswo.Completed = new AsyncOperationCompletedHandler<uint>(DataSentHandler);
+                }
+
+            } else {
+                Debug.LogWarning("Failed to establish connection. Error Code: " + asyncInfo.ErrorCode);
+                // In the failure case we'll requeue the data and wait before trying again.
+                holoClient.Dispose();
+
+            }
+        }
+
+        public void NetworkConnectedHandlerBundles(IAsyncAction asyncInfo, AsyncStatus status) {
+            //Debug.Log("YOU CONNECTED TO: " + networkConnection.Information.RemoteAddress.ToString());
+
+            // Status completed is successful.
+            if (status == AsyncStatus.Completed) {
+                DataReader networkDataReader;
+
+                // Since we are connected, we can send the data we set aside when establishing the connection.
+                using (networkDataReader = new DataReader(holoClient.InputStream)) {
+                    Debug.Log("PREPARING TO READ DATA");
+                    // Then write the data.
+                    byte[] bytes = networkDataReader.ReadBytes();
+                    this.networkAssets = AssetBundle.LoadFromMemory(bytes);
+                    // Again, this is an async operation, so we'll set a callback.
+                    DataReaderLoadOperation drlo = networkDataWriter.LoadAsync();
+                    drlo.Completed = new AsyncOperationCompletedHandler<uint>(DataSentHandler);
                 }
 
             } else {

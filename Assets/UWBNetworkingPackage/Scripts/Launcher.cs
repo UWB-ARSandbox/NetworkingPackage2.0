@@ -35,7 +35,9 @@ namespace UWBNetworkingPackage
         [Tooltip("The name of the room that this project will attempt to connect to. This room must be created by a \"Master Client\".")]    
         public string RoomName;
 
-#endregion
+        public AssetBundle networkAssets;
+
+        #endregion
 
         /// <summary>
         /// Sets the Photon Network settings on awake
@@ -160,6 +162,22 @@ namespace UWBNetworkingPackage
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Needs to be called in order to instatite an object from asset bundle.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="rot"></param>
+        /// <param name="id1"></param>
+        /// <param name="np"></param>
+        [PunRPC]
+        public void SpawnNetworkObject(Vector3 pos, Quaternion rot, int id1, String assetName)
+        {
+            GameObject networkObject = networkAssets.LoadAsset(assetName) as GameObject;
+            Instantiate(networkObject, pos, rot);
+            PhotonView[] nViews = networkObject.GetComponentsInChildren<PhotonView>();
+            nViews[0].viewID = id1;
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace UWBNetworkingPackage
     {
 #region Public Properties
 
-        private bool MasterClient = false;
+        private bool MasterClient = true;
         
         //public bool HoloLens = false;
         //public bool Kinect = false;
@@ -49,12 +49,12 @@ namespace UWBNetworkingPackage
             }
             else
             {
-                gameObject.AddComponent<MasterClientLauncher>();
+                gameObject.AddComponent<ReceivingClientLauncher>();
             }
 #endif
 
 #if UNITY_ANDROID
-            gameObject.AddComponent<MasterClientLauncher>();
+            gameObject.AddComponent<AndroidLauncher>();
 #endif
 
 #if UNITY_WSA_10_0

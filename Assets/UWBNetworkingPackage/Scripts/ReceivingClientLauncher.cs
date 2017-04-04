@@ -17,7 +17,6 @@ namespace UWBNetworkingPackage
     {
 
         //public Dictionary<string, AssetBundle> bundles = new Dictionary<string, AssetBundle>();
-        public AssetBundle networkAssets;
 
         #region Private Properties
 
@@ -189,7 +188,7 @@ namespace UWBNetworkingPackage
         /// </summary>
         /// <param name="networkConfig"></param>
         [PunRPC]
-        public void ReceiveBundles(string networkConfig, string bundleName)
+        public void ReceiveBundles(string networkConfig)
         {
             var networkConfigArray = networkConfig.Split(':');
             Debug.Log("Start receiving bundle.");

@@ -101,7 +101,7 @@ namespace UWBNetworkingPackage
                 string path = Application.dataPath + "/StreamingAssets/AssetBundlesPC";
                 foreach (string file in System.IO.Directory.GetFiles(path))
                 {
-                    if (!file.Contains("manifest") && !file.Contains("meta"))
+                    if (file.Contains("networkbundle") && !file.Contains("manifest") && !file.Contains("meta"))
                     {
                         Debug.Log(file);
                         //Note: this will break if the file path in which asset bundles is stored
@@ -109,9 +109,23 @@ namespace UWBNetworkingPackage
                         //the file.
                         byte[] bytes = File.ReadAllBytes(file);
                         Debug.Log(bytes.Length);
+                        AssetBundle bundle = AssetBundle.LoadFromMemory(bytes);
+
+                        GameObject networkObject = bundle.LoadAsset("Cube") as GameObject;
+                        Instantiate(networkObject, transform.position, transform.rotation);
+                        PhotonView[] nViews = networkObject.GetComponentsInChildren<PhotonView>();
+                        nViews[0].viewID = PhotonNetwork.AllocateViewID();
 
                     }
                 }
+            }
+
+            //AssetBundle object instantiation for testing purposes
+            if (Input.GetKeyDown("i"))
+            {
+                int id1 = PhotonNetwork.AllocateViewID();
+
+                photonView.RPC("SpawnNetworkObject", PhotonTargets.AllBuffered, transform.position, transform.rotation, id1, "Cube");
             }
         }
 
@@ -121,6 +135,15 @@ namespace UWBNetworkingPackage
         public override void OnConnectedToMaster()
         {
             PhotonNetwork.CreateRoom(RoomName);
+            string path = Application.dataPath + "/StreamingAssets/AssetBundlesPC";
+            foreach (string file in System.IO.Directory.GetFiles(path))
+            {
+                if (file.Contains("networkbundle") && !file.Contains("manifest") && !file.Contains("meta"))
+                {
+                    byte[] bytes = File.ReadAllBytes(file);
+                    this.networkAssets = AssetBundle.LoadFromMemory(bytes);
+                }
+            }
         }
 
         /// <summary>
@@ -201,7 +224,7 @@ namespace UWBNetworkingPackage
                             
                             bundleListener.Stop();
                         }).Start();
-                    photonView.RPC("ReceiveBundles", PhotonPlayer.Find(id), GetLocalIpAddress() + ":" + port, path);
+                    photonView.RPC("ReceiveBundles", PhotonPlayer.Find(id), GetLocalIpAddress() + ":" + port);
         }
 
         #region RPC Method
@@ -231,7 +254,7 @@ namespace UWBNetworkingPackage
             string path = Application.dataPath + "/StreamingAssets/AssetBundlesPC";
             foreach (string file in System.IO.Directory.GetFiles(path))
             {
-                if (file.Contains("networkBundle") && !file.Contains("manifest") && !file.Contains("meta"))
+                if (file.Contains("networkbundle") && !file.Contains("manifest") && !file.Contains("meta"))
                 {
                     SendBundles(id, file, (Port + 5));
                 }
@@ -248,7 +271,7 @@ namespace UWBNetworkingPackage
             string path = Application.dataPath + "/StreamingAssets/AssetBundlesAndroid";
             foreach (string file in System.IO.Directory.GetFiles(path))
             {
-                if (file.Contains("networkBundle") && !file.Contains("manifest") && !file.Contains("meta"))
+                if (file.Contains("networkbundle") && !file.Contains("manifest") && !file.Contains("meta"))
                 {
                     SendBundles(id, file, (Port + 2));
                 }
@@ -265,7 +288,7 @@ namespace UWBNetworkingPackage
             string path = Application.dataPath + "/StreamingAssets/AssetBundlesHololens";
             foreach (string file in System.IO.Directory.GetFiles(path))
             {
-                if (file.Contains("networkBundle") && !file.Contains("manifest") && !file.Contains("meta"))
+                if (file.Contains("networkbundle") && !file.Contains("manifest") && !file.Contains("meta"))
                 {
                     SendBundles(id, file, (Port + 3));
                 }

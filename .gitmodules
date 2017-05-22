@@ -1,6 +1,6 @@
 [submodule "Assets/ASL"]
 	path = Assets/ASL
-	url = https://github.com/UWB-ARSandbox/ASL
+url=https://github.com/UWB-ARSandbox/ASL/tree/Room_Texture
 [submodule "Room_Texture"]
 	path = Room_Texture
 	url = https://github.com/UWB-ARSandbox/Room_Texture
